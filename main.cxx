@@ -19,6 +19,35 @@ void printArray(double* array, int m, int n){
 }
 
 void simplex(double* array,int m,int n){
+  //while last row has negative entries
+  
+  int offset = (m-1)*n;
+  int p_col=offset;//pivot column
+  for(int i = 1 ; i<(n-1);++i){
+    if(array[offset + i] < array[p_col]){
+      p_col = offset+i;
+    }
+  }
+  p_col-=offset;
+  printf("pivot column is %d\n",p_col);
+  
+  int p_row=0;//pivot row
+  double p_val=array[p_row*n + (n-1)]/array[p_row*n + p_col];
+  for(int i = 0; i < (m-1);++i){
+    double v1 = array[i*n + p_col];
+    double v2 = array[i*n + (n-1)];
+    if(v1 > 0){
+      if(v2/v1 < p_val){
+	p_row = i;
+	p_val = v2/v1;
+      }
+    }
+  }
+
+  printf("pivot row is %d\n",p_row);
+
+  //norm p_row
+  //elim all other non-zero entries
 
 }
 
