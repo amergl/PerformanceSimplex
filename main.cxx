@@ -17,22 +17,38 @@ void printArray(double* array, int m, int n){
   }
 }
 
-void simplex(double* array,int m,int n){
-  //while last row has negative entries
+void eliminate(double* array, int m, int n, int p_row, int p_col){
+  for(int i = 0; i<m; ++i)
+    for(int j = 0 ; j<n;++j){
+      if(i==p_row)
+	continue;
+      if(j!=p_col)
+	array[i*n+j]-=(array[i*n+p_col]*array[p_row*n+j])/array[p_row*n+p_col];
+    }
+  for(int i = 0; i<m;++i)
+    if(i!=p_row)
+      array[i*n+p_col]=0;
+}
 
+bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
   //find pivot column
   int offset = (m-1)*n;
-  int p_col=offset;//pivot column
+  p_col=offset;//pivot column
   for(int i = 1 ; i<(n-1);++i){
     if(array[offset + i] < array[p_col]){
       p_col = offset+i;
     }
   }
+  if(array[p_col] >= 0)
+    return 0;
   p_col-=offset;
   printf("pivot column is %d\n",p_col);
 
   //find pivot row
-  int p_row=0;
+  p_row=0;
+  while(array[p_row*n+p_col]<0 && p_row < m)
+    ++p_row;
+  
   double p_val=array[p_row*n + (n-1)]/array[p_row*n + p_col];
   for(int i = 0; i < (m-1);++i){
     double v1 = array[i*n + p_col];
@@ -54,18 +70,18 @@ void simplex(double* array,int m,int n){
   }
   array[p_row*n+p_col]=1;
 
-  for(int i = 0; i<m; ++i)
-    for(int j = 0 ; j<n;++j){
-      if(i==p_row)
-	continue;
-      if(j!=p_col)
-	array[i*n+j]-=(array[i*n+p_col]*array[p_row*n+j])/array[p_row*n+p_col];
-    }
-  for(int i = 0; i<m;++i)
-    if(i!=p_row)
-      array[i*n+p_col]=0;
+  return 1;
+}
 
-  printArray(array,m,n);
+void simplex(double* array,int m,int n){
+  //while last row has negative entries
+
+  int p_row,p_col;
+  while(findPivot(array,m,n,p_row,p_col)){
+    eliminate(array,m,n,p_row,p_col);
+    printArray(array,m,n);
+  }
+
 }
 
 int main(int argc, char** argv){
