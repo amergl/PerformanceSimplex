@@ -9,7 +9,6 @@
 using namespace std;
 
 void printArray(double* array, int m, int n){
-  printf("%dx%d\n",m,n);
   for(int i = 0 ; i < m; ++i){
     for(int j = 0; j < n; ++j){
       printf("%e ",array[i*n+j]);
@@ -20,7 +19,8 @@ void printArray(double* array, int m, int n){
 
 void simplex(double* array,int m,int n){
   //while last row has negative entries
-  
+
+  //find pivot column
   int offset = (m-1)*n;
   int p_col=offset;//pivot column
   for(int i = 1 ; i<(n-1);++i){
@@ -30,8 +30,9 @@ void simplex(double* array,int m,int n){
   }
   p_col-=offset;
   printf("pivot column is %d\n",p_col);
-  
-  int p_row=0;//pivot row
+
+  //find pivot row
+  int p_row=0;
   double p_val=array[p_row*n + (n-1)]/array[p_row*n + p_col];
   for(int i = 0; i < (m-1);++i){
     double v1 = array[i*n + p_col];
@@ -47,8 +48,24 @@ void simplex(double* array,int m,int n){
   printf("pivot row is %d\n",p_row);
 
   //norm p_row
-  //elim all other non-zero entries
+  for(int i = 0 ; i < n;++i){
+    if(i != p_col)
+      array[p_row*n + i]/=array[p_row*n+p_col];//TODO last col
+  }
+  array[p_row*n+p_col]=1;
 
+  for(int i = 0; i<m; ++i)
+    for(int j = 0 ; j<n;++j){
+      if(i==p_row)
+	continue;
+      if(j!=p_col)
+	array[i*n+j]-=(array[i*n+p_col]*array[p_row*n+j])/array[p_row*n+p_col];
+    }
+  for(int i = 0; i<m;++i)
+    if(i!=p_row)
+      array[i*n+p_col]=0;
+
+  printArray(array,m,n);
 }
 
 int main(int argc, char** argv){
