@@ -66,27 +66,66 @@ bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
   //norm p_row
   for(int i = 0 ; i < n;++i){
     if(i != p_col)
-      array[p_row*n + i]/=array[p_row*n+p_col];//TODO last col
+      array[p_row*n + i]/=array[p_row*n+p_col];
   }
   array[p_row*n+p_col]=1;
 
   return 1;
 }
 
-void simplex(double* array,int m,int n){
-  //while last row has negative entries
-
-  int p_row,p_col;
-  while(findPivot(array,m,n,p_row,p_col)){
-    eliminate(array,m,n,p_row,p_col);
-    printArray(array,m,n);
+int dualSimplex(double* array, int m, int n){
+  //find pivot transposed
+  int p_row=0;
+  double b_i=0.0;
+  int offset = n-1;
+  for(int i = 0 ; i < (m-1);++i){
+    if(array[i*n+offset] <= b_i){
+      p_row=i;
+      b_i=array[p_row*n+offset];
+    }
   }
+
+  if(b_i == 0)
+      return 0;
+  
+  int p_col=0;
+  double a_i=1.0;
+  for(int i = 0 ; i < (n-1);++i){
+    if(b_i/array[p_row*n+i] >= b_i/a_i){
+      p_col=i;
+      a_i=array[p_row*n+p_col];
+    }
+  }
+
+  //norm line
+  for(int i = 0 ; i < n;++i)
+    array[p_row*n+i]/=a_i;
+  
+  eliminate(array,m,n,p_row,p_col);
+
+  return 1;
+}
+
+void simplex(double* array,int m,int n){
+    printf("Input scheme\n");
+    printArray(array,m,n);
+    while(dualSimplex(array,m,n));
+    printf("Dual simplex result\n");
+    printArray(array,m,n);
+
+
+    int p_row,p_col;
+    while(findPivot(array,m,n,p_row,p_col)){
+	eliminate(array,m,n,p_row,p_col);
+    }
+    printf("Primal simplex result\n");
+    printArray(array,m,n);
 
 }
 
 int main(int argc, char** argv){
-  if(argc == 2){
-    ifstream istream(argv[1]);
+    if(argc == 2){
+	ifstream istream(argv[1]);
     if(istream.good()){
       vector<vector<double>*> v;
       string line,item;
@@ -102,7 +141,7 @@ int main(int argc, char** argv){
       int m = v.size();
       int n = v[0]->size();
       double* data = new double[m*n];
-      for(int i = 0; i < v.size();++i)
+      for(int i = 0; i < (int)v.size();++i)
 	memcpy(data+i*n,&(*(v[i]))[0],n*sizeof(double));
 
       simplex(data,v.size(),v[0]->size());
