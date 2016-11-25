@@ -1,12 +1,7 @@
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <string>
 #include <stdio.h>
-#include <memory.h>
 
-using namespace std;
+#ifndef PERFORMANCE_SIMPLEX
+#define PERFORMANCE_SIMPLEX
 
 void printArray(double* array, int m, int n){
   for(int i = 0 ; i < m; ++i){
@@ -42,7 +37,6 @@ bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
   if(array[p_col] >= 0)
     return 0;
   p_col-=offset;
-  printf("pivot column is %d\n",p_col);
 
   //find pivot row
   p_row=0;
@@ -61,8 +55,6 @@ bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
     }
   }
 
-  printf("pivot row is %d\n",p_row);
-
   //norm p_row
   for(int i = 0 ; i < n;++i){
     if(i != p_col)
@@ -73,7 +65,7 @@ bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
   return 1;
 }
 
-int dualSimplex(double* array, int m, int n){
+int dualsimplex(double* array, int m, int n){
   //find pivot transposed
   int p_row=0;
   double b_i=0.0;
@@ -107,50 +99,9 @@ int dualSimplex(double* array, int m, int n){
 }
 
 void simplex(double* array,int m,int n){
-    printf("Input scheme\n");
-    printArray(array,m,n);
-    while(dualSimplex(array,m,n));
-    printf("Dual simplex result\n");
-    printArray(array,m,n);
-
-
     int p_row,p_col;
     while(findPivot(array,m,n,p_row,p_col)){
 	eliminate(array,m,n,p_row,p_col);
     }
-    printf("Primal simplex result\n");
-    printArray(array,m,n);
-
 }
-
-int main(int argc, char** argv){
-    if(argc == 2){
-	ifstream istream(argv[1]);
-    if(istream.good()){
-      vector<vector<double>*> v;
-      string line,item;
-      while(getline(istream,line)){
-	v.push_back(new vector<double>());
-	stringstream stream;
-	stream << line;
-	while(getline(stream,item,' ')){
-	  v.back()->push_back(stod(item));
-	}
-      }
-
-      int m = v.size();
-      int n = v[0]->size();
-      double* data = new double[m*n];
-      for(int i = 0; i < (int)v.size();++i)
-	memcpy(data+i*n,&(*(v[i]))[0],n*sizeof(double));
-
-      simplex(data,v.size(),v[0]->size());
-
-      for(vector<double>* ptr : v)
-	delete ptr;
-    }
-
-  }
-
-  return 0;
-}
+#endif

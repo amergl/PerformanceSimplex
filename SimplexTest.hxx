@@ -4,14 +4,12 @@
 class SimplexTest : public CppUnit::TestFixture{
 public:
   void setUp(){
-    printf("Set up\n");
   }
 
   void tearDown(){
-    printf("Tear down\n");
   }
 
-  void testTest(){
-    printf("Test testcase\n");
-  }
+  void testPrimalSimplex();
+
+  void testDualSimplex();
 };
