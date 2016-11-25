@@ -1,16 +1,25 @@
 #include <stdio.h>
 #include <memory.h>
+#include <math.h>
 #include <vector>
 #include <string>
 #include <fstream>
 
 #include <cppunit/TestCaller.h>
-#include <cppunit/TestResult.h>
+#include <cppunit/TestAssert.h>
+#include <cppunit/ui/text/TestRunner.h>
+#include <cppunit/CompilerOutputter.h>
 
 #include "SimplexTest.hxx"
 #include "simplex.hxx"
 
-bool read(std::string filename,double** data, int& m, int& n){
+bool equals(double* calculated,double* solution,int n,double accuracy){
+  for(int i = 0; i < n; ++i)
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(calculated[i],solution[i],accuracy);
+  return true;
+}
+
+bool read(std::string filename,double** data, int& m, int& n, double** solution, int& solution_size){
   using namespace std;
 
   ifstream istream(filename);
@@ -34,6 +43,10 @@ bool read(std::string filename,double** data, int& m, int& n){
   for(int i = 0; i < (int)v.size();++i)
     memcpy((*data)+i*n,&(*(v[i]))[0],n*sizeof(double));
 
+  (*solution)=(double*)calloc(m,sizeof(double));
+  solution_size=m;
+  (*solution)[0]=1;
+
   istream.close();
   return true;
 }
@@ -44,12 +57,15 @@ void SimplexTest::testPrimalSimplex(){
   };
 
   double* array=0;
-  int m=0,n=0;
+  double* solution=0;
+  double* calculated=0;
+  int m=0,n=0,solution_size=0;
   for(std::string file : files){
-    if(!read(file,&array,m,n))
+    if(!read(file,&array,m,n,&solution,solution_size))
        return;
 
-    simplex(array,m,n);
+    simplex(array,m,n,&calculated,solution_size);
+    equals(calculated,solution,solution_size,EPS);
     
     delete[] array;
   }
@@ -62,25 +78,31 @@ void SimplexTest::testDualSimplex(){
   };
 
   double* array=0;
-  int m=0,n=0;
+  double* solution=0;
+  double* calculated=0;
+  int m=0,n=0,solution_size=0;
   for(std::string file : files){
-    if(!read(file,&array,m,n))
-      return;
+    if(!read(file,&array,m,n,&solution,solution_size))
+       return;
 
-    dualsimplex(array,m,n);
-
+    dualsimplex(array,m,n,&calculated,solution_size);
+    equals(calculated,solution,solution_size,EPS);
+    
     delete[] array;
   }
 }
 
 int main(int argc, char** argv){
   using namespace CppUnit;
-  TestCaller<SimplexTest> primalTest("test primal simplex",&SimplexTest::testPrimalSimplex);
-  TestCaller<SimplexTest> dualTest("test dual simplex",&SimplexTest::testDualSimplex);
-
-  TestResult result;
-  primalTest.run(&result);
-  dualTest.run(&result);
+  
+  TextUi::TestRunner runner;
+  Test* primalTest = new TestCaller<SimplexTest>("primal simplex",&SimplexTest::testPrimalSimplex);
+  runner.addTest(primalTest);
+  Test* dualTest = new TestCaller<SimplexTest>("dual simplex",&SimplexTest::testDualSimplex);
+  runner.addTest(dualTest);
+  runner.setOutputter(new CompilerOutputter(&(runner.result()),std::cerr));
+  runner.run();
+    
   return 0;
 }
     

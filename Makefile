@@ -11,4 +11,4 @@ test: test_simplex
 	@./test_simplex
 
 clean:
-	@rm -f main test_simplex *~
+	@rm -f test_simplex *~

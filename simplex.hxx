@@ -65,7 +65,7 @@ bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
   return 1;
 }
 
-int dualsimplex(double* array, int m, int n){
+int dualsimplex(double* array, int m, int n, double** solution, int& solution_size){
   //find pivot transposed
   int p_row=0;
   double b_i=0.0;
@@ -95,13 +95,18 @@ int dualsimplex(double* array, int m, int n){
   
   eliminate(array,m,n,p_row,p_col);
 
+  (*solution)=(double*)calloc(m,sizeof(double));
+  solution_size=m;
+
   return 1;
 }
 
-void simplex(double* array,int m,int n){
+void simplex(double* array,int m,int n, double ** solution, int& solution_size){
     int p_row,p_col;
     while(findPivot(array,m,n,p_row,p_col)){
 	eliminate(array,m,n,p_row,p_col);
     }
+    (*solution)=(double*)calloc(m,sizeof(double));
+    solution_size=m;
 }
 #endif
