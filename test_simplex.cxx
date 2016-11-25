@@ -15,7 +15,7 @@
 
 bool equals(double* calculated,double* solution,int n,double accuracy){
   for(int i = 0; i < n; ++i)
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(calculated[i],solution[i],accuracy);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(solution[i],calculated[i],accuracy);
   return true;
 }
 
@@ -28,6 +28,17 @@ bool read(std::string filename,double** data, int& m, int& n, double** solution,
 
   vector<vector<double>*> v;
   string line,item;
+
+  vector<double> v2;
+  getline(istream,line);
+  stringstream sstream;
+  sstream << line;
+  while(getline(sstream,item,' '))
+    v2.push_back(stod(item));
+  solution_size=v2.size();
+  (*solution)=new double[solution_size];
+  memcpy(*solution,&(v2[0]),solution_size*sizeof(double));
+  
   while(getline(istream,line)){
     v.push_back(new vector<double>());
     stringstream stream;
@@ -42,10 +53,6 @@ bool read(std::string filename,double** data, int& m, int& n, double** solution,
   (*data) = new double[m*n];
   for(int i = 0; i < (int)v.size();++i)
     memcpy((*data)+i*n,&(*(v[i]))[0],n*sizeof(double));
-
-  (*solution)=(double*)calloc(m,sizeof(double));
-  solution_size=m;
-  (*solution)[0]=1;
 
   istream.close();
   return true;
@@ -96,13 +103,14 @@ int main(int argc, char** argv){
   using namespace CppUnit;
   
   TextUi::TestRunner runner;
+  runner.setOutputter(new CompilerOutputter(&(runner.result()),std::cerr));
+
   Test* primalTest = new TestCaller<SimplexTest>("primal simplex",&SimplexTest::testPrimalSimplex);
   runner.addTest(primalTest);
   Test* dualTest = new TestCaller<SimplexTest>("dual simplex",&SimplexTest::testDualSimplex);
   runner.addTest(dualTest);
-  runner.setOutputter(new CompilerOutputter(&(runner.result()),std::cerr));
+
   runner.run();
-    
   return 0;
 }
     

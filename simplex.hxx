@@ -95,8 +95,8 @@ int dualsimplex(double* array, int m, int n, double** solution, int& solution_si
   
   eliminate(array,m,n,p_row,p_col);
 
-  (*solution)=(double*)calloc(m,sizeof(double));
-  solution_size=m;
+  (*solution)=new double[n-1];
+  solution_size=n-1;
 
   return 1;
 }
@@ -106,7 +106,7 @@ void simplex(double* array,int m,int n, double ** solution, int& solution_size){
     while(findPivot(array,m,n,p_row,p_col)){
 	eliminate(array,m,n,p_row,p_col);
     }
-    (*solution)=(double*)calloc(m,sizeof(double));
-    solution_size=m;
+    (*solution)=new double[n-1];
+    solution_size=n-1;
 }
 #endif
