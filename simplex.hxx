@@ -51,8 +51,8 @@ bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
     double v2 = array[i*n + (n-1)];
     if(v1 > 0){
       if(v2/v1 < p_val){
-	p_row = i;
-	p_val = v2/v1;
+        p_row = i;
+        p_val = v2/v1;
       }
     }
   }
