@@ -13,16 +13,18 @@ void printArray(double* array, int m, int n){
 }
 
 void eliminate(double* array, int m, int n, int p_row, int p_col){
-  for(int i = 0; i<m; ++i)
-    for(int j = 0 ; j<n;++j){
-      if(i==p_row)
-	continue;
-      if(j!=p_col)
-	array[i*n+j]-=(array[i*n+p_col]*array[p_row*n+j])/array[p_row*n+p_col];
+  for(int i = 0; i<m; ++i) {
+    for (int j = 0; j < n; ++j) {
+      if (i == p_row)
+        continue;
+      if (j != p_col)
+        array[i * n + j] -= (array[i * n + p_col] * array[p_row * n + j]) / array[p_row * n + p_col];
     }
-  for(int i = 0; i<m;++i)
+  }
+  for(int i = 0; i<m;++i) {
     if(i!=p_row)
       array[i*n+p_col]=0;
+  }
 }
 
 bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
