@@ -13,9 +13,52 @@
 #include "SimplexTest.hxx"
 #include "simplex.hxx"
 
-bool equals(double* calculated,double* solution,int n,double accuracy){
+void equals(double* calculated, double* solution, int m, int n, double accuracy){
+  for(int i = 0; i < m; ++i)
+    for(int j = 0; j < n; ++j)
+      CPPUNIT_ASSERT_DOUBLES_EQUAL(solution[i*n+j],calculated[i*n+j],accuracy);
+}
+
+void equals(double* calculated,double* solution,int n,double accuracy){
   for(int i = 0; i < n; ++i)
     CPPUNIT_ASSERT_DOUBLES_EQUAL(solution[i],calculated[i],accuracy);
+}
+
+bool readCondensed(std::string filename, double** data, int& m, int& n){
+  using namespace std;
+
+  ifstream istream(filename);
+  if(!istream.good())
+    return false;
+
+  vector<double> v;
+  string line,item;
+
+  getline(istream,line);
+  stringstream sstream;
+  sstream << line;
+  while(getline(sstream,item,' '))
+    v.push_back(stod(item));
+
+  n=v.size()+2;
+
+  vector<vector<double>*> equations;
+  while(getline(istream,line)){
+
+    equations.push_back(new vector<double>());
+    sstream = stringstream();
+    sstream << line;
+
+    while(getline(sstream,item,' '))
+      (equations.back())->push_back(stod(item));
+  }
+
+  m=equations.size();
+  
+  (*data)=new double[m*n];
+  for(int i = 0; i < (int)m;++i)
+    memcpy((*data)+i*n,&((*(equations[i]))[0]),n*sizeof(double));
+	
   return true;
 }
 
@@ -52,7 +95,7 @@ bool read(std::string filename,double** data, int& m, int& n, double** solution,
   n = v[0]->size();
   (*data) = new double[m*n];
   for(int i = 0; i < (int)v.size();++i)
-    memcpy((*data)+i*n,&(*(v[i]))[0],n*sizeof(double));
+    memcpy((*data)+i*n,&((*(v[i]))[0]),n*sizeof(double));
 
   istream.close();
   return true;
@@ -75,6 +118,7 @@ void SimplexTest::testPrimalSimplex(){
     equals(calculated,solution,solution_size,EPS);
     
     delete[] array;
+    delete[] solution;
   }
 
 }
@@ -96,6 +140,40 @@ void SimplexTest::testDualSimplex(){
     equals(calculated,solution,solution_size,EPS);
     
     delete[] array;
+    delete[] solution;
+  }
+}
+
+void SimplexTest::testInflate(){
+  using namespace std;
+  vector<string> files={
+    "test/data","test/data2","test/data3"
+  };
+
+  
+  string inp_suffix=".raw";
+  string sol_suffix=".txt";
+
+  double *condensed=0, *inflated=0, *solution=0, *garbage=0;
+  int c_n=0,c_m=0, i_m=0, i_n=0, s_m=0, s_n=0, n_vars=0, garbage_size=0;
+  for(string file : files){
+    string inp_path=file+inp_suffix;
+
+    if(!readCondensed(inp_path,&condensed,c_n,c_m))
+       continue;
+
+    inflate(condensed,c_n,c_m,&inflated,i_m,i_n,n_vars);
+
+    string sol_path=file+sol_suffix;
+    read(sol_path,&solution,s_m,s_n,&garbage,garbage_size);
+    CPPUNIT_ASSERT(s_m==i_m);
+    CPPUNIT_ASSERT(s_n==i_n);
+    equals(inflated,solution,i_m,i_n,EPS);
+
+    delete[] condensed;
+    delete[] inflated;
+    delete[] solution;
+    delete[] garbage;
   }
 }
 
@@ -109,6 +187,8 @@ int main(int argc, char** argv){
   runner.addTest(primalTest);
   Test* dualTest = new TestCaller<SimplexTest>("dual simplex",&SimplexTest::testDualSimplex);
   runner.addTest(dualTest);
+  Test* inflateTest = new TestCaller<SimplexTest>("inflate",&SimplexTest::testInflate);
+  runner.addTest(inflateTest);
 
   runner.run();
   return 0;

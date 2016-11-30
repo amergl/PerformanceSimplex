@@ -12,6 +12,51 @@ void printArray(double* array, int m, int n){
   }
 }
 
+
+//creates the simplex scheme from a condensed format
+void inflate(double* array, int m, int n, double ** output, int& out_m, int& out_n, int& n_vars){
+  /*
+  int type=array[m];;
+    if(fabs(type-(-1)) < EPS){ //case less than
+      n+=1;
+    } else if(fabs(type-(0)) < EPS){ // case equal to
+      //ignore
+    } else if(fabs(type-(1)) < EPS){ // case greater than
+      n+=1;
+      for(int i = 0; i < n;++i)
+	(array[i])*=-1;
+
+    } else {
+      return false;
+    }
+  }
+  
+  ++n;//+1 for right hand side value of equations
+  m=equations.size();
+  (*data)=new double[m*n];
+  double* array=*data;
+  int count = 0;
+  for(int i = 0 ; i < m; ++i){
+    for(int j = 0 ; j < n; ++j){
+      if(j<n_vars){
+	array[i*n+j]=((*equations)[i])[j];
+      }
+      else if ( j < (n-1) && fabs(((*equations)[i])[n_vars]) > 0){
+	if(j == (n_vars+count)){
+	  array[i*n+j]=1;
+	  count++;
+	} else {
+	  array[i*n+j]=0;
+	}
+      }
+      else if ( j == (n-1) ){
+	array[i*n+j]= ((*equations)[i]).back();
+      }
+    }
+  }
+  */
+}
+
 void eliminate(double* array, int m, int n, int p_row, int p_col){
   for(int i = 0; i<m; ++i)
     for(int j = 0 ; j<n;++j){
