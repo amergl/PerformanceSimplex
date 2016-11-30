@@ -4,6 +4,9 @@ project(PerformanceSimplex)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 
 set(SOURCE_FILES
-    main.cxx)
+    simplex.hxx
+    test_simplex.cxx)
 
-add_executable(PerformanceSimplex ${SOURCE_FILES})
+add_executable(test_simplex ${SOURCE_FILES})
+
+target_link_libraries(test_simplex cppunit)
