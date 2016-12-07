@@ -12,49 +12,47 @@ void printArray(double* array, int m, int n){
   }
 }
 
-
 //creates the simplex scheme from a condensed format
-void inflate(double* array, int m, int n, double ** output, int& out_m, int& out_n, int& n_vars){
-  /*
-  int type=array[m];;
+void inflate(double* array, int in_m, int in_n, double ** output, int& m, int& n, int& n_vars){
+  const double EPS = 1e-16;
+  n_vars=in_n-1;
+  n=in_n;
+
+  //get constraint type
+  for(int i = 0; i < in_m; ++i){
+    int type=array[i*in_n+n_vars-1];
     if(fabs(type-(-1)) < EPS){ //case less than
       n+=1;
     } else if(fabs(type-(0)) < EPS){ // case equal to
       //ignore
     } else if(fabs(type-(1)) < EPS){ // case greater than
       n+=1;
-      for(int i = 0; i < n;++i)
-	(array[i])*=-1;
+      for(int j = 0; j < in_n;++j)
+	(array[i*in_n+j])*=-1;
+    } else
+      return;
+  }
 
-    } else {
-      return false;
-    }
-  }
-  
-  ++n;//+1 for right hand side value of equations
-  m=equations.size();
-  (*data)=new double[m*n];
-  double* array=*data;
+  //compute simplex tableau
+  m=in_m;
+  (*output)=(double*)calloc(m*n,sizeof(double));
+  double* A=*output;
   int count = 0;
+
+  //insert constraints into tableau
   for(int i = 0 ; i < m; ++i){
-    for(int j = 0 ; j < n; ++j){
-      if(j<n_vars){
-	array[i*n+j]=((*equations)[i])[j];
-      }
-      else if ( j < (n-1) && fabs(((*equations)[i])[n_vars]) > 0){
-	if(j == (n_vars+count)){
-	  array[i*n+j]=1;
-	  count++;
-	} else {
-	  array[i*n+j]=0;
-	}
-      }
-      else if ( j == (n-1) ){
-	array[i*n+j]= ((*equations)[i]).back();
-      }
+    for(int j = 0 ; j < (n_vars-1); ++j)
+	A[i*n+j]=array[i*n+j];
+    A[i*n+n-1]=array[i*in_n+n_vars-1];
+  }
+
+  //add partial identity matrix for slack variables
+  if( fabs(array[i*n+n_vars-1]) > 0){
+    if(j == (n_vars+count)){
+      A[i*n+j]=1;
+      count++;
     }
   }
-  */
 }
 
 void eliminate(double* array, int m, int n, int p_row, int p_col){
