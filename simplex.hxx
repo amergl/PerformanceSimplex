@@ -56,16 +56,18 @@ void inflate(double* array, int in_m, int in_n, double ** output, int& m, int& n
 }
 
 void eliminate(double* array, int m, int n, int p_row, int p_col){
-  for(int i = 0; i<m; ++i)
-    for(int j = 0 ; j<n;++j){
-      if(i==p_row)
-	continue;
-      if(j!=p_col)
-	array[i*n+j]-=(array[i*n+p_col]*array[p_row*n+j])/array[p_row*n+p_col];
+  for(int i = 0; i<m; ++i) {
+    for (int j = 0; j < n; ++j) {
+      if (i == p_row)
+        continue;
+      if (j != p_col)
+        array[i * n + j] -= (array[i * n + p_col] * array[p_row * n + j]) / array[p_row * n + p_col];
     }
-  for(int i = 0; i<m;++i)
+  }
+  for(int i = 0; i<m;++i) {
     if(i!=p_row)
       array[i*n+p_col]=0;
+  }
 }
 
 bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
@@ -92,8 +94,8 @@ bool findPivot(double* array, int m, int n, int& p_row, int& p_col){
     double v2 = array[i*n + (n-1)];
     if(v1 > 0){
       if(v2/v1 < p_val){
-	p_row = i;
-	p_val = v2/v1;
+        p_row = i;
+        p_val = v2/v1;
       }
     }
   }
@@ -145,11 +147,11 @@ int dualsimplex(double* array, int m, int n, double** solution, int& solution_si
 }
 
 void simplex(double* array,int m,int n, double ** solution, int& solution_size){
-    int p_row,p_col;
-    while(findPivot(array,m,n,p_row,p_col)){
-	eliminate(array,m,n,p_row,p_col);
-    }
-    (*solution)=new double[n-1];
-    solution_size=n-1;
+  int p_row,p_col;
+  while(findPivot(array,m,n,p_row,p_col)){
+    eliminate(array,m,n,p_row,p_col);
+  }
+  solution_size=n-1;
+  (*solution)=new double[solution_size];
 }
 #endif
