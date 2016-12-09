@@ -40,21 +40,17 @@ void inflate(double *array, int in_m, int in_n, double **output, int &m, int &n,
   double *A = *output;
   int count = 0;
 
-
   for (int row = 0; row < (m-1); ++row) {
     //insert constraints into tableau
     for (int col = 0; col < n_vars; ++col) {
       A[row * n + col] = array[row * in_n + col];
     }
-
-
     //add slack variable
     const bool isInequality = fabs(array[row * in_n + n_vars ]) > 0;
     if (isInequality) {
           A[row * n + n_vars + count] = 1;
           count++;
     }
-
     //insert constraint right hand side
     A[row * n + n - 1] = array[row * in_n + n_vars + 1];
   }
@@ -163,11 +159,20 @@ void simplex(double *condensed, int condensed_m, int condensed_n, double **solut
   int p_row, p_col,m,n,n_vars;
   double* array;
   inflate(condensed,condensed_m,condensed_n,&array,m,n,n_vars);
+  solution_size = n - 1;
+  int* permutation = (int*)calloc(solution_size,sizeof(int));
+
   while (findPivot(array, m, n, p_row, p_col)) {
+    permutation[p_row] = p_col;
     eliminate(array, m, n, p_row, p_col);
   }
-  solution_size = n - 1;
-  (*solution) = new double[solution_size];
+
+  (*solution) = (double*)calloc(solution_size,sizeof(double));
+
+  for(int i = 0; i < (solution_size-n_vars);++i)
+    (*solution)[permutation[i]]=array[i*n+n-1];
+
+  delete[] permutation;
 }
 
 #endif

@@ -202,7 +202,7 @@ int main(int argc, char** argv){
   Test* primalTest = new TestCaller<SimplexTest>("primal simplex",&SimplexTest::testPrimalSimplex);
   runner.addTest(primalTest);
   Test* dualTest = new TestCaller<SimplexTest>("dual simplex",&SimplexTest::testDualSimplex);
-  runner.addTest(dualTest);
+  //runner.addTest(dualTest);
 
   runner.run();
   return 0;
