@@ -1,0 +1,1 @@
+/usr/bin/c++    -std=c++11 -Wall -g   CMakeFiles/test_simplex.dir/test_simplex.cxx.o  -o test_simplex -lcppunit 
