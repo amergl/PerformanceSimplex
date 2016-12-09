@@ -55,9 +55,11 @@ bool readCondensed(std::string filename, double** data, int& m, int& n){
 
   m=equations.size();
   
-  (*data)=new double[m*n];
+  (*data)=new double[(m+1)*n];
   for(int i = 0; i < (int)m;++i)
-    memcpy((*data)+i*n,&((*(equations[i]))[0]),n*sizeof(double));
+    memcpy((*data)+i*n,equations[i]->data(),n*sizeof(double));
+  memcpy((*data)+m*n,v.data(),v.size()*sizeof(double));
+  ++m;
 	
   return true;
 }
@@ -149,7 +151,6 @@ void SimplexTest::testInflate(){
   vector<string> files={
     "test/data","test/data2","test/data3"
   };
-
   
   string inp_suffix=".raw";
   string sol_suffix=".txt";
@@ -162,10 +163,12 @@ void SimplexTest::testInflate(){
     if(!readCondensed(inp_path,&condensed,c_n,c_m))
        continue;
 
+
     inflate(condensed,c_n,c_m,&inflated,i_m,i_n,n_vars);
 
     string sol_path=file+sol_suffix;
     read(sol_path,&solution,s_m,s_n,&garbage,garbage_size);
+
     CPPUNIT_ASSERT(s_m==i_m);
     CPPUNIT_ASSERT(s_n==i_n);
     equals(inflated,solution,i_m,i_n,EPS);
