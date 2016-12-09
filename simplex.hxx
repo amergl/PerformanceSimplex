@@ -115,44 +115,55 @@ bool findPivot(double *array, int m, int n, int &p_row, int &p_col) {
   return 1;
 }
 
-int dualsimplex(double *condensed, int condensed_m, int condensed_n, double **solution, int &solution_size) {
+void dualsimplex(double *condensed, int condensed_m, int condensed_n, double **solution, int &solution_size) {
   //find pivot transposed
   int m,n,n_vars;
   double* array;
   inflate(condensed,condensed_m,condensed_n,&array,m,n,n_vars);
-
-  int p_row = 0;
-  double b_i = 0.0;
-  int offset = n - 1;
-  for (int i = 0; i < (m - 1); ++i) {
-    if (array[i * n + offset] <= b_i) {
-      p_row = i;
-      b_i = array[p_row * n + offset];
-    }
-  }
-
-  if (b_i == 0)
-    return 0;
-
-  int p_col = 0;
-  double a_i = 1.0;
-  for (int i = 0; i < (n - 1); ++i) {
-    if (b_i / array[p_row * n + i] >= b_i / a_i) {
-      p_col = i;
-      a_i = array[p_row * n + p_col];
-    }
-  }
-
-  //norm line
-  for (int i = 0; i < n; ++i)
-    array[p_row * n + i] /= a_i;
-
-  eliminate(array, m, n, p_row, p_col);
-
-  (*solution) = new double[n - 1];
   solution_size = n - 1;
 
-  return 1;
+  int* permutation = (int*)calloc(solution_size,sizeof(int));
+  for(int i = 0 ; i < (solution_size-n_vars);++i)
+    permutation[i]=n_vars+i;
+
+
+  int p_row = 0,p_col = 0;
+  double b_i,a_i=0;
+  int offset = n - 1;
+
+  while(true){
+    b_i=0;
+    for (int i = 0; i < (m - 1); ++i) {
+      if (array[i * n + offset] <= b_i) {
+	p_row = i;
+	b_i = array[p_row * n + offset];
+      }
+    }
+
+    if (fabs(b_i) <= 1e-16 )
+      break;
+
+    p_col = 0;
+    a_i = 1.0;
+    for (int i = 0; i < (n - 1); ++i) {
+      if (b_i / array[p_row * n + i] >= b_i / a_i) {
+	p_col = i;
+	a_i = array[p_row * n + p_col];
+      }
+    }
+
+    //norm line
+    for (int i = 0; i < n; ++i)
+      array[p_row * n + i] /= a_i;
+
+    permutation[p_row]=p_col;
+    eliminate(array, m, n, p_row, p_col);
+  }
+
+
+  (*solution) = (double*)calloc(solution_size,sizeof(double));
+  for(int i = 0; i < (solution_size-n_vars);++i)
+    (*solution)[permutation[i]]=array[i*n+n-1];
 }
 
 void simplex(double *condensed, int condensed_m, int condensed_n, double **solution, int &solution_size) {
@@ -161,6 +172,9 @@ void simplex(double *condensed, int condensed_m, int condensed_n, double **solut
   inflate(condensed,condensed_m,condensed_n,&array,m,n,n_vars);
   solution_size = n - 1;
   int* permutation = (int*)calloc(solution_size,sizeof(int));
+  for(int i = 0 ; i < (solution_size-n_vars);++i)
+    permutation[i]=n_vars+i;
+
 
   while (findPivot(array, m, n, p_row, p_col)) {
     permutation[p_row] = p_col;
