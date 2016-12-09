@@ -42,25 +42,26 @@ bool readCondensed(std::string filename, double** data, int& m, int& n){
 
   n=v.size()+2;
 
-  vector<vector<double>*> equations;
+  vector<vector<double>> equations;
   while(getline(istream,line)){
 
-    equations.push_back(new vector<double>());
+    equations.push_back(vector<double>());
     sstream = stringstream();
     sstream << line;
 
     while(getline(sstream,item,' '))
-      (equations.back())->push_back(stod(item));
+      (equations.back()).push_back(stod(item));
   }
 
   m=equations.size();
-  
+
   (*data)=new double[(m+1)*n];
+
   for(int i = 0; i < (int)m;++i)
-    memcpy((*data)+i*n,equations[i]->data(),n*sizeof(double));
+    memcpy((*data)+i*n,equations[i].data(),n*sizeof(double));
   memcpy((*data)+m*n,v.data(),v.size()*sizeof(double));
   ++m;
-	
+
   return true;
 }
 
@@ -126,12 +127,13 @@ void SimplexTest::testPrimalSimplex(){
   double* calculated=0;
   int m=0,n=0,solution_size=0;
   for(std::string file : files){
-    CPPUNIT_ASSERT(readInflated(file+".raw",&array,m,n));
+    CPPUNIT_ASSERT(readCondensed(file+".raw",&array,m,n));
     CPPUNIT_ASSERT(readSolution(file+".sol",&solution,solution_size));
 
     simplex(array,m,n,&calculated,solution_size);
+
     equals(calculated,solution,solution_size,EPS);
-    
+
     delete[] array;
     delete[] solution;
   }
@@ -150,7 +152,7 @@ void SimplexTest::testDualSimplex(){
   for(std::string file : files){
     CPPUNIT_ASSERT(readCondensed(file+".raw",&array,m,n));
     CPPUNIT_ASSERT(readSolution(file+".sol",&solution,solution_size));
-    
+
     dualsimplex(array,m,n,&calculated,calculated_size);
 
     CPPUNIT_ASSERT_EQUAL(solution_size,calculated_size);
@@ -160,6 +162,7 @@ void SimplexTest::testDualSimplex(){
     delete[] array;
     delete[] solution;
   }
+
 }
 
 void SimplexTest::testInflate(){
@@ -169,22 +172,23 @@ void SimplexTest::testInflate(){
   };
   
   double *condensed=0, *inflated=0, *solution=0;
-  int c_n=0,c_m=0, i_m=0, i_n=0, s_m=0, s_n=0, n_vars=0;
+  int condensed_m=0,condensed_n=0, inflated_m=0, inflated_n=0, solution_m=0, solution_n=0, n_vars=0;
   for(string file : files){
-    CPPUNIT_ASSERT(readCondensed(file+".raw",&condensed,c_n,c_m));
+    CPPUNIT_ASSERT(readCondensed(file+".raw",&condensed,condensed_m,condensed_n));
 
-    inflate(condensed,c_n,c_m,&inflated,i_m,i_n,n_vars);
+    inflate(condensed,condensed_m,condensed_n,&inflated,inflated_m,inflated_n,n_vars);
 
-    CPPUNIT_ASSERT(readInflated(file+".txt",&solution,s_m,s_n));
-
-    CPPUNIT_ASSERT(s_m==i_m);
-    CPPUNIT_ASSERT(s_n==i_n);
-    equals(inflated,solution,i_m,i_n,EPS);
+    CPPUNIT_ASSERT(readInflated(file+".txt",&solution,solution_m,solution_n));
+    CPPUNIT_ASSERT(solution_m==inflated_m);
+    CPPUNIT_ASSERT(solution_n==inflated_n);
+    
+    equals(inflated,solution,inflated_m,inflated_n,EPS);
 
     delete[] condensed;
     delete[] inflated;
     delete[] solution;
   }
+
 }
 
 int main(int argc, char** argv){
