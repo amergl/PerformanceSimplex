@@ -1,3 +1,0 @@
-/home/andreas/LaTeX/Operations-Research/PerformanceSimplex/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/andreas/LaTeX/Operations-Research/PerformanceSimplex/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/andreas/LaTeX/Operations-Research/PerformanceSimplex/cmake-build-debug/CMakeFiles/test_simplex.dir
