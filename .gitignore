@@ -2,4 +2,5 @@
 test_simplex
 .idea/
 main
-#*#cmake-build-debug/
+#*#
+cmake-build-debug/
