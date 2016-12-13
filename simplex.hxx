@@ -1,7 +1,52 @@
-#include <stdio.h>
 
 #ifndef PERFORMANCE_SIMPLEX
 #define PERFORMANCE_SIMPLEX
+
+#include <stdio.h>
+#include <fstream>
+#include <sstream>
+#include <cstring>
+
+
+bool read(std::string filename,double** data, int& m, int& n, double** solution, int& solution_size){
+  using namespace std;
+
+  ifstream istream(filename);
+  if(!istream.good())
+    return false;
+
+  vector<vector<double>*> v;
+  string line,item;
+
+  vector<double> v2;
+  getline(istream,line);
+  stringstream sstream;
+  sstream << line;
+  while(getline(sstream,item,' '))
+    v2.push_back(stod(item));
+  solution_size=v2.size();
+  (*solution)=new double[solution_size];
+  memcpy(*solution,&(v2[0]),solution_size*sizeof(double));
+
+  while(getline(istream,line)){
+    v.push_back(new vector<double>());
+    stringstream stream;
+    stream << line;
+    while(getline(stream,item,' ')){
+      v.back()->push_back(stod(item));
+    }
+  }
+
+  m = v.size();
+  n = v[0]->size();
+  (*data) = new double[m*n];
+  for(int i = 0; i < (int)v.size();++i)
+    memcpy((*data)+i*n,&(*(v[i]))[0],n*sizeof(double));
+
+  istream.close();
+  return true;
+}
+
 
 void printArray(double* array, int m, int n){
   for(int i = 0 ; i < m; ++i){
