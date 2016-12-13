@@ -22,6 +22,15 @@ add_executable(benchmark_simplex benchmark_simplex.cpp ${COMMON_SOURCE_FILES})
 
 target_link_libraries(benchmark_simplex benchmark)
 
+add_custom_target(copyTests)
+add_custom_command(TARGET copyTests PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/test
+        ${PROJECT_BINARY_DIR}/test)
+
+add_dependencies(test_simplex copyTests)
+add_dependencies(benchmark_simplex copyTests)
+
 enable_testing()
 add_test(simplex test_simplex)
 add_test(simplex_performance benchmark_simplex)
