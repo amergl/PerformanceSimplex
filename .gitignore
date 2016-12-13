@@ -3,3 +3,4 @@ test_simplex
 .idea/
 main
 #*#
+cmake-build-*
