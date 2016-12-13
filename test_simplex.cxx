@@ -110,7 +110,7 @@ int main(int argc, char** argv){
   Test* dualTest = new TestCaller<SimplexTest>("dual simplex",&SimplexTest::testDualSimplex);
   runner.addTest(dualTest);
 
-  runner.run();
-  return 0;
+  bool success = runner.run();
+  return !success;
 }
     
