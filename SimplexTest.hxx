@@ -15,4 +15,6 @@ public:
   void testPrimalSimplex();
 
   void testDualSimplex();
+
+  void testInflate();
 };
