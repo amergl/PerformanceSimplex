@@ -91,25 +91,28 @@ bool findPivot(double *array, int m, int n, int &p_row, int &p_col) {
   //find pivot row
   p_row = 0;
 
-  while (array[p_row * n + p_col] < 0 && p_row < m)
+  //used for init value of p_val
+  while (array[p_row * n + p_col] < 0 && p_row < (m-1))
     ++p_row;
 
-  double p_val = array[p_row * n + (n - 1)] / array[p_row * n + p_col];
-  for (int i = 0; i < (m - 1); ++i) {
-    double v1 = array[i * n + p_col];
-    double v2 = array[i * n + (n - 1)];
+  double v1=0,v2=0,v2byv1,p_val = array[p_row * n + (n - 1)] / array[p_row * n + p_col];
+   for (int i = p_row+1; i < (m - 1); ++i) {
+    v1 = array[i * n + p_col];
+    v2 = array[i * n + (n - 1)];
     if (v1 > 0) {
-      if (v2 / v1 < p_val) {
+      v2byv1=v2/v1;
+      if (v2byv1 < p_val) {
         p_row = i;
-        p_val = v2 / v1;
+        p_val = v2byv1;
       }
     }
   }
 
   //norm p_row
+  double v=array[p_row * n + p_col];
   for (int i = 0; i < n; ++i) {
     if (i != p_col)
-      array[p_row * n + i] /= array[p_row * n + p_col];
+      array[p_row * n + i] /= v;
   }
   array[p_row * n + p_col] = 1;
   return 1;
@@ -131,7 +134,8 @@ void dualsimplex(double *condensed, int condensed_m, int condensed_n, double **s
   double b_i,a_i=0;
   int offset = n - 1;
 
-  while(true){
+  int it=solution_size;
+  while(it-- > 0){
     b_i=0;
     for (int i = 0; i < (m - 1); ++i) {
       if (array[i * n + offset] <= b_i) {
