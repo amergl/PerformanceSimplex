@@ -9,8 +9,8 @@
 
 // min/max number of variables for simplex
 // max values for tableau coefficients
-const int VAR_MIN   = 5;
-const int VAR_MAX   = 10;
+const int VAR_MIN   = 100;
+const int VAR_MAX   = 150;
 const int COEFF_MAX = 1000;
 
 int numVariables;

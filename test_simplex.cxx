@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <ctime>
 
 #include <cppunit/TestCaller.h>
 #include <cppunit/TestAssert.h>
@@ -191,6 +192,26 @@ void SimplexTest::testInflate(){
 
 }
 
+void SimplexTest::testPerformance(){
+  std::vector<std::string> files={
+    "test/dataX"
+  };
+
+  double* array=0;
+  double* calculated=0;
+  int m=0,n=0,calculated_size=0;
+  for(std::string file : files){
+    CPPUNIT_ASSERT(readCondensed(file+".raw",&array,m,n));
+
+    clock_t t0 = clock();
+    simplex(array,m,n,&calculated,calculated_size);
+    printf("\n[\"%s\"]: Time used %.4es\n",file.c_str(),((double)(clock()-t0))/(CLOCKS_PER_SEC));
+    
+    delete[] array;
+  }
+
+}
+
 int main(int argc, char** argv){
   using namespace CppUnit;
   
@@ -203,6 +224,8 @@ int main(int argc, char** argv){
   runner.addTest(primalTest);
   Test* dualTest = new TestCaller<SimplexTest>("dual simplex",&SimplexTest::testDualSimplex);
   runner.addTest(dualTest);
+  Test* performanceTest = new TestCaller<SimplexTest>("performance test",&SimplexTest::testPerformance);
+  runner.addTest(performanceTest);
 
   runner.run();
   return 0;
