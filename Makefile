@@ -1,6 +1,6 @@
 CC=g++
 CXXFLAGS=-std=c++11 -Wall -ggdb
-LFLAGS=-lcppunit
+LFLAGS=-lcppunit -fopenmp
 
 all: clean test_simplex test
 
