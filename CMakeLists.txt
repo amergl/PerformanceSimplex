@@ -36,3 +36,7 @@ add_test(simplex test_simplex)
 add_test(simplex_performance benchmark_simplex)
 
 target_link_libraries(test_simplex cppunit)
+
+add_custom_target(simplex_all)
+add_dependencies(simplex_all test_simplex)
+add_dependencies(simplex_all simplex_performance)
