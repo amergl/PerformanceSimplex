@@ -1,4 +1,3 @@
-
 #ifndef PERFORMANCE_SIMPLEX
 #define PERFORMANCE_SIMPLEX
 
@@ -7,6 +6,7 @@
 #include <sstream>
 #include <cstring>
 #include <cmath>
+#include <omp.h>
 
 bool readCondensed(std::string filename, double** data, int& m, int& n){
   using namespace std;
@@ -79,9 +79,9 @@ bool readInflated(std::string filename,double** data, int& m, int& n){
 }
 
 void printArray(double *array, int m, int n) {
-  for(int i = 0 ; i < m; ++i) {
-    for(int j = 0; j < n; ++j) {
-      printf("%e ",array[i*n+j]);
+  for (int i = 0; i < m; ++i) {
+    for (int j = 0; j < n; ++j) {
+      printf("%e ", array[i * n + j]);
     }
     printf("\n");
   }
@@ -103,6 +103,7 @@ void inflate(double *array, int in_m, int in_n, double **output, int &m, int &n,
       //ignore
     } else if (fabs(type - (1)) < EPS) { // case greater than
       n += 1;
+      #pragma omp parallel for
       for (int j = 0; j < in_n; ++j)
         (array[i * in_n + j]) *= -1;
     } else
@@ -117,6 +118,7 @@ void inflate(double *array, int in_m, int in_n, double **output, int &m, int &n,
 
   for (int row = 0; row < (m-1); ++row) {
     //insert constraints into tableau
+    #pragma omp parallel for
     for (int col = 0; col < n_vars; ++col) {
       A[row * n + col] = array[row * in_n + col];
     }
@@ -136,14 +138,17 @@ void inflate(double *array, int in_m, int in_n, double **output, int &m, int &n,
 }
 
 void eliminate(double *array, int m, int n, int p_row, int p_col) {
+  #pragma omp parallel for
   for (int i = 0; i < m; ++i) {
-    for (int j = 0; j < n; ++j) {
-      if (i == p_row)
-        continue;
-      if (j != p_col)
-        array[i * n + j] -= (array[i * n + p_col] * array[p_row * n + j]) / array[p_row * n + p_col];
-    }
-  }
+    if (i != p_row)
+      #pragma omp parallel for
+      for (int j = 0; j < n; ++j) {
+        if (j != p_col)
+          array[i * n + j] -= (array[i * n + p_col] * array[p_row * n + j]) / array[p_row * n + p_col];
+        
+      } //for j
+  } // for i
+  #pragma omp parallel for
   for (int i = 0; i < m; ++i) {
     if (i != p_row)
       array[i * n + p_col] = 0;
@@ -166,25 +171,30 @@ bool findPivot(double *array, int m, int n, int &p_row, int &p_col) {
   //find pivot row
   p_row = 0;
 
-  while (array[p_row * n + p_col] < 0 && p_row < m)
+  //used for init value of p_val
+  while (array[p_row * n + p_col] < 0 && p_row < (m-1))
     ++p_row;
 
-  double p_val = array[p_row * n + (n - 1)] / array[p_row * n + p_col];
-  for (int i = 0; i < (m - 1); ++i) {
-    double v1 = array[i * n + p_col];
-    double v2 = array[i * n + (n - 1)];
+  double v1=0,v2=0,v2byv1,p_val = array[p_row * n + (n - 1)] / array[p_row * n + p_col];
+  //pragma omp parallel for
+  for (int i = p_row+1; i < (m - 1); ++i) {
+    v1 = array[i * n + p_col];
+    v2 = array[i * n + (n - 1)];
     if (v1 > 0) {
-      if (v2 / v1 < p_val) {
+      v2byv1=v2/v1;
+      if (v2byv1 < p_val) {
         p_row = i;
-        p_val = v2 / v1;
+        p_val = v2byv1;
       }
     }
   }
 
   //norm p_row
+  double v=array[p_row * n + p_col];
+  #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     if (i != p_col)
-      array[p_row * n + i] /= array[p_row * n + p_col];
+      array[p_row * n + i] /= v;
   }
   array[p_row * n + p_col] = 1;
   return 1;
@@ -198,6 +208,7 @@ void dualsimplex(double *condensed, int condensed_m, int condensed_n, double **s
   solution_size = n - 1;
 
   int* permutation = (int*)calloc(solution_size,sizeof(int));
+  #pragma omp parallel for
   for(int i = 0 ; i < (solution_size-n_vars);++i)
     permutation[i]=n_vars+i;
 
@@ -206,8 +217,10 @@ void dualsimplex(double *condensed, int condensed_m, int condensed_n, double **s
   double b_i,a_i=0;
   int offset = n - 1;
 
-  while(true){
+  int it=solution_size;
+  while(it-- > 0){
     b_i=0;
+    #pragma omp parallel for
     for (int i = 0; i < (m - 1); ++i) {
       if (array[i * n + offset] <= b_i) {
 	p_row = i;
@@ -215,12 +228,12 @@ void dualsimplex(double *condensed, int condensed_m, int condensed_n, double **s
       }
     }
 
-
     if (fabs(b_i) <= 1e-16 )
       break;
 
     p_col = 0;
     a_i = 1.0;
+    
     for (int i = 0; i < (n - 1); ++i) {
       if (b_i / array[p_row * n + i] >= b_i / a_i) {
 	p_col = i;
@@ -229,6 +242,7 @@ void dualsimplex(double *condensed, int condensed_m, int condensed_n, double **s
     }
 
     //norm line
+    #pragma omp parallel for
     for (int i = 0; i < n; ++i)
       array[p_row * n + i] /= a_i;
 
@@ -248,6 +262,7 @@ void simplex(double *condensed, int condensed_m, int condensed_n, double **solut
   inflate(condensed,condensed_m,condensed_n,&array,m,n,n_vars);
   solution_size = n - 1;
   int* permutation = (int*)calloc(solution_size,sizeof(int));
+  #pragma omp parallel for
   for(int i = 0 ; i < (solution_size-n_vars);++i)
     permutation[i]=n_vars+i;
 
@@ -264,4 +279,5 @@ void simplex(double *condensed, int condensed_m, int condensed_n, double **solut
 
   delete[] permutation;
 }
+
 #endif

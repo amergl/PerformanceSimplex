@@ -17,4 +17,7 @@ public:
   void testDualSimplex();
 
   void testInflate();
+
+  void testPerformance();
+  
 };
