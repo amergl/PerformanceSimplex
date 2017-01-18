@@ -3,8 +3,8 @@
 //
 
 #include <benchmark/benchmark.h>
-#include <stdlib.h>
 #include <iostream>
+#include <stdlib.h>
 #include "simplex.hxx"
 
 
@@ -45,11 +45,10 @@ static void BM_simplex(benchmark::State &state, StringType file) {
   while (state.KeepRunning()) {
     state.PauseTiming();
     double *array = 0;
-    double *solution = 0;
     double *calculated = 0;
     int m = 0, n = 0, solution_size = 0;
 
-    if (!read(file, &array, m, n, &solution, solution_size)) {
+    if (!readCondensed(file, &array, m, n)) {
       state.SkipWithError("Fehler beim Lesen der Daten");
       break;
     }
@@ -65,10 +64,9 @@ static void BM_dualsimplex(benchmark::State &state, StringType file) {
   while (state.KeepRunning()) {
     state.PauseTiming();
     double *array = 0;
-    double *solution = 0;
     double *calculated = 0;
     int m = 0, n = 0, solution_size = 0;
-    if (!read(file, &array, m, n, &solution, solution_size)) {
+    if (!readCondensed(file, &array, m, n)) {
       state.SkipWithError("Fehler beim Lesen der Daten");
       break;
     }
@@ -84,10 +82,8 @@ template<class StringType>
 static void BM_read(benchmark::State &state, StringType file) {
   while (state.KeepRunning()) {
     double *array = 0;
-    double *solution = 0;
-    double *calculated = 0;
-    int m = 0, n = 0, solution_size = 0;
-    if (!read(file, &array, m, n, &solution, solution_size)) {
+    int m = 0, n = 0;
+    if (!readCondensed(file, &array, m, n)) {
       state.SkipWithError("Fehler beim Lesen der Daten");
       break;
     }
@@ -101,15 +97,15 @@ static void BM_read(benchmark::State &state, StringType file) {
 BENCHMARK_CAPTURE(BM_FindPivot, s1000x1000, 1000, 1000);
 //BENCHMARK(BM_eliminate); // not working yet
 
-BENCHMARK_CAPTURE(BM_simplex, data1, "test/data.txt");
-BENCHMARK_CAPTURE(BM_simplex, data2, "test/data2.txt");
-BENCHMARK_CAPTURE(BM_dualsimplex, data1, "test/data.txt");
-BENCHMARK_CAPTURE(BM_dualsimplex, data2, "test/data2.txt");
-BENCHMARK_CAPTURE(BM_dualsimplex, data3, "test/data3.txt");
+BENCHMARK_CAPTURE(BM_simplex, data1, "test/data.raw");
+BENCHMARK_CAPTURE(BM_simplex, data2, "test/data2.raw");
+BENCHMARK_CAPTURE(BM_dualsimplex, data1, "test/data.raw");
+BENCHMARK_CAPTURE(BM_dualsimplex, data2, "test/data2.raw");
+BENCHMARK_CAPTURE(BM_dualsimplex, data3, "test/data3.raw");
 
-BENCHMARK_CAPTURE(BM_read, data1, "test/data.txt");
-BENCHMARK_CAPTURE(BM_read, data2, "test/data2.txt");
-BENCHMARK_CAPTURE(BM_read, data3, "test/data3.txt");
+BENCHMARK_CAPTURE(BM_read, data1, "test/data.raw");
+BENCHMARK_CAPTURE(BM_read, data2, "test/data2.raw");
+BENCHMARK_CAPTURE(BM_read, data3, "test/data3.raw");
 
 
 BENCHMARK_MAIN();
