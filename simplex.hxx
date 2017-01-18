@@ -8,7 +8,48 @@
 #include <cstring>
 #include <cmath>
 
-bool read(std::string filename,double** data, int& m, int& n, double** solution, int& solution_size){
+bool readCondensed(std::string filename, double** data, int& m, int& n){
+  using namespace std;
+
+  ifstream istream(filename);
+  if(!istream.good())
+    return false;
+
+  vector<double> v;
+  string line,item;
+
+  getline(istream,line);
+  stringstream sstream;
+  sstream << line;
+  while(getline(sstream,item,' '))
+    v.push_back(stod(item));
+
+  n=v.size()+2;
+
+  vector<vector<double>> equations;
+  while(getline(istream,line)){
+
+    equations.push_back(vector<double>());
+    sstream = stringstream();
+    sstream << line;
+
+    while(getline(sstream,item,' '))
+      (equations.back()).push_back(stod(item));
+  }
+
+  m=equations.size();
+
+  (*data)=new double[(m+1)*n];
+
+  for(int i = 0; i < (int)m;++i)
+    memcpy((*data)+i*n,equations[i].data(),n*sizeof(double));
+  memcpy((*data)+m*n,v.data(),v.size()*sizeof(double));
+  ++m;
+
+  return true;
+}
+
+bool readInflated(std::string filename,double** data, int& m, int& n){
   using namespace std;
 
   ifstream istream(filename);
@@ -17,16 +58,6 @@ bool read(std::string filename,double** data, int& m, int& n, double** solution,
 
   vector<vector<double>*> v;
   string line,item;
-
-  vector<double> v2;
-  getline(istream,line);
-  stringstream sstream;
-  sstream << line;
-  while(getline(sstream,item,' '))
-    v2.push_back(stod(item));
-  solution_size=v2.size();
-  (*solution)=new double[solution_size];
-  memcpy(*solution,&(v2[0]),solution_size*sizeof(double));
 
   while(getline(istream,line)){
     v.push_back(new vector<double>());
@@ -41,12 +72,11 @@ bool read(std::string filename,double** data, int& m, int& n, double** solution,
   n = v[0]->size();
   (*data) = new double[m*n];
   for(int i = 0; i < (int)v.size();++i)
-    memcpy((*data)+i*n,&(*(v[i]))[0],n*sizeof(double));
+    memcpy((*data)+i*n,&((*(v[i]))[0]),n*sizeof(double));
 
   istream.close();
   return true;
 }
-
 
 void printArray(double *array, int m, int n) {
   for(int i = 0 ; i < m; ++i) {
